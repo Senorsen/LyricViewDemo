@@ -29,6 +29,7 @@ import android.view.animation.LinearInterpolator;
 import org.mozilla.universalchardet.UniversalDetector;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -37,6 +38,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -345,6 +347,25 @@ public class LyricView extends View {
             }
         } else {
             invalidateView();
+        }
+    }
+
+    public void setLyric(String string) {
+        InputStream is = new ByteArrayInputStream(string.getBytes());
+        setupLyricResource(is, StandardCharsets.UTF_8.name());
+        for (int i = 0; i < mLyricInfo.songLines.size(); i++) {
+
+            StaticLayout staticLayout = new StaticLayout(mLyricInfo.songLines.get(i).content, mTextPaint,
+                    (int) getRawSize(TypedValue.COMPLEX_UNIT_DIP, DEFAULT_MAX_LENGTH),
+                    Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false);
+
+            if (staticLayout.getLineCount() > 1) {
+                mEnableLineFeed = true;
+                mExtraHeight = mExtraHeight + (staticLayout.getLineCount() - 1) * mTextHeight;
+            }
+
+            mLineFeedRecord.add(i, mExtraHeight);
+
         }
     }
 
