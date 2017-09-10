@@ -719,6 +719,10 @@ public class LyricView extends View {
         }
     }
 
+    public String getCurrentLine() {
+        return mLyricInfo.songLines.get(mCurrentPlayLine).content;
+    }
+
     private void setupLyricResource(InputStream inputStream, String charsetName) {
         if (inputStream != null) {
             try {
