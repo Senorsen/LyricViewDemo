@@ -796,7 +796,8 @@ public class LyricView extends View {
             Matcher matcher = timePattern.matcher(line);
             while (matcher.find()) {
                 LineInfo lineInfo = new LineInfo();
-                lineInfo.content = line.substring(index + 1, line.length());
+                String content = line.substring(index + 1, line.length());
+                if (content.trim().isEmpty()) return;
                 lineInfo.start = measureStartTimeMillis(matcher.group());
                 lyricInfo.songLines.add(lineInfo);
             }
