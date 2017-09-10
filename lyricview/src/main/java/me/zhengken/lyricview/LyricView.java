@@ -41,7 +41,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by zhengken.me on 2016/11/27.
@@ -738,6 +743,14 @@ public class LyricView extends View {
                 inputStream.close();
                 inputStreamReader.close();
 
+                Collections.sort(lyricInfo.songLines, new Comparator<LineInfo>() {
+                    @Override
+                    public int compare(LineInfo t0, LineInfo t1) {
+                        if (t0.start > t1.start) return 1;
+                        if (t0.start < t1.start) return -1;
+                        return 0;
+                    }
+                });
                 mLyricInfo = lyricInfo;
                 mLineCount = mLyricInfo.songLines.size();
                 invalidateView();
@@ -779,20 +792,24 @@ public class LyricView extends View {
         }
         if (index >= 9 && line.trim().length() > index + 1) {
             // lyrics
-            LineInfo lineInfo = new LineInfo();
-            lineInfo.content = line.substring(index + 1, line.length());
-            lineInfo.start = measureStartTimeMillis(line.substring(0, index), index - 1);
-            lyricInfo.songLines.add(lineInfo);
+            Pattern timePattern = Pattern.compile("\\[\\d+:\\d+(\\.\\d+)?]");
+            Matcher matcher = timePattern.matcher(line);
+            while (matcher.find()) {
+                LineInfo lineInfo = new LineInfo();
+                lineInfo.content = line.substring(index + 1, line.length());
+                lineInfo.start = measureStartTimeMillis(matcher.group());
+                lyricInfo.songLines.add(lineInfo);
+            }
         }
     }
 
     /**
      * 从字符串中获得时间值
      */
-    private long measureStartTimeMillis(String str, int endIndex) {
+    private long measureStartTimeMillis(String str) {
         long minute = Long.parseLong(str.substring(1, 3));
         long second = Long.parseLong(str.substring(4, 6));
-        long millisecond = Long.parseLong(str.substring(7, endIndex));
+        long millisecond = Long.parseLong(str.substring(7, str.indexOf(']') - 1));
         return millisecond + second * 1000 + minute * 60 * 1000;
     }
 
